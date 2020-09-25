@@ -29,18 +29,4 @@ vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
 vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
 vatHost handling: ["deliver","message","slot1",{"method":"decr","args":[]}]
 vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
-bundleSource reading...
-setBundle...
-from vatHost: ok
-deliver...
-from vatHost: 0
-from vatHost: 1
-vatHost handling: ["setBundle","(function buildRootObject(vatPowers) {\n  const { freeze } = Object;\n  const { testLog } = vatPowers;\n\n  let count = 0;\n\n  return freeze({\n    incr() {\n      return count++;\n    },\n    decr() {\n      return count--;\n    },\n  });\n});\n"]
-vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
-vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
-vatHost handling: ["deliver","message","slot1",{"method":"decr","args":[]}]
-from vatHost: 2
-from vatHost: 1
-vatHost handling: ["deliver","message","slot1",{"method":"incr","args":[]}]
-demo concludes.
 ```
