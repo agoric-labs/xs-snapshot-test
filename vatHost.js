@@ -3,8 +3,15 @@ const { freeze } = Object; // cf. harden
 function testLog(...args) {
   trace(`TEST: ${JSON.stringify(args)}\n`);
 }
+testLog(`hello from vatHost`);
 
-function main(port) {
+export default function main() {
+  testLog(`hello from vatHost.main`);
+  globalThis.handle = (handleArg) => {
+    testLog(`hello from handle(${handleArg})`);
+    return JSON.stringify(['ok']);
+  };
+  return;
   const clist = {};
   let nextSlot = 1;
 
@@ -40,7 +47,7 @@ function main(port) {
   return handle; // prefer this, but need it to work in subsequent reloads too
 }
 
-main(self);
+//main(self);
 
 
 // the loader is responsible for:

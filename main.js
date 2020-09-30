@@ -1,4 +1,4 @@
-import { createVatFromSource } from "glue";
+import { Vat } from "glue";
 import { File } from "file";
 
 function traceln(txt) {
@@ -28,15 +28,18 @@ const vats = new Map();
 const snapshots = new Map();
 
 async function createVat(index, vatBundle) {
-  traceln("in createVat");
   const syscall = {
     send(...args) { return 'results'; },
   };
   const vatHost = bundleSource('./vatHost.js');
-  traceln(`vatHost has ${vatHost.length} bytes`);
-  const tools = createVatFromSource(vatHost, syscall);
+  traceln(`calling createVatFromSource (${vatHost.length} bytes)`);
+  //const tools = createVatFromSource(vatHost, syscall);
+  const vat = new Vat(); // hardcoded to load vatHost.js at top level
+  traceln(`back from createVatFromSource`);
+  const resp = vat.sendToVat('main does sendToVat');
+  traceln(`called vat.sendToVat [${resp}]`);
   //await tools.sendToVat(['loadBundle', vatBundle]);
-  //vats.set(index, tools);
+  //vats.set(index, vat);
 }
 
 export default async function main() {
