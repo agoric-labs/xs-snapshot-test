@@ -1,8 +1,6 @@
 {
   "include": [
-    "$(MODDABLE)/examples/manifest_base.json",
-    "$(MODDABLE)/modules/files/file/manifest.json",
-    "$(MODULES)/base/worker/manifest.json"
+    "$(MODDABLE)/examples/manifest_base.json"
   ],
   "creation": {
     "static": 12288,
@@ -14,15 +12,20 @@
       "initial": 64,
       "incremental": 32
     },
-    "stack": 128,
     "keys": {
-      "available": 32,
+      "available": 4096,
       "name": 53,
       "symbol": 3
     },
+    "stack": 4096,
     "main": "main"
   },
   "modules": {
-    "*": ["./main", "./vatHost"]
+    "file": [
+      "$(MODULES)/base/instrumentation/*",
+      "$(MODULES)/files/file/*",
+      "$(MODULES)/files/file/lin/*"
+    ],
+    "*": ["./main", "./glue", "./vatHost"]
   }
 }

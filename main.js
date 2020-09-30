@@ -1,8 +1,4 @@
-/*
- * based on Moddable worker example
- */
-
-import Worker from "worker";
+import { createVatFromSource } from "glue";
 import { File } from "file";
 
 function traceln(txt) {
@@ -24,61 +20,71 @@ function makePromiseKit() {
   return { promise, resolve, reject };
 }
 
-export async function main() {
-  let sync = makePromiseKit();
-  let post;
-  function connectToWorker(vatWorker) {
-    vatWorker.onmessage = function (message) {
-      trace("from vatHost: ");
-      traceln(message);
-      sync.resolve();
-      sync = makePromiseKit();
-    };
-    const post = (msg) => vatWorker.postMessage(msg);
-    return { post };
-  }
+// our global scope has the following C functions defined:
+// createVatFromSource(source, syscall) -> { sendToVat, createSnapshot, deleteVat }
+// createVatFromSnapshot(snapshot, syscall) -> { sendToVat, createSnapshot, deleteVat }
 
-  let vatWorker1 = new Worker("vatHost", {
-    allocation: 6 * 1024,
-    stackCount: 64,
-    slotCount: 32,
-  });
-  post = connectToWorker(vatWorker1);
+const vats = new Map();
+const snapshots = new Map();
 
+async function createVat(index, vatBundle) {
+  traceln("in createVat");
+  const syscall = {
+    send(...args) { return 'results'; },
+  };
+  const vatHost = bundleSource('./vatHost.js');
+  traceln(`vatHost has ${vatHost.length} bytes`);
+  const tools = createVatFromSource(vatHost, syscall);
+  //await tools.sendToVat(['loadBundle', vatBundle]);
+  //vats.set(index, tools);
+}
 
+export default async function main() {
   const aliceVatSrc = bundleSource("./alice-vat.js");
   traceln("setBundle...");
-  post(["setBundle", aliceVatSrc]);
-  await sync.promise;
+  await createVat('alice', aliceVatSrc);
+  traceln("back from createVat");
 
-  // snapshot the vatWorker
-  const snapshot1 = MAKE_SNAPSHOT(vatWorker1);
-  // stop using vatWorker1
+  //await suspendVat('alice');
 
+  //await reloadVat('alice');
+  //await sendToVat('index', 'incr');
+  //await suspendVat('alice');
 
-  // now pretend that the process has just relaunched, and that we'd saved
-  // snapshot1 in a way that we can reload. Make a new Worker from that
-  // snapshot.
-  const vatWorker2 = LOAD_SNAPSHOT(snapshot1);
-  post = connectToWorker(vatWorker2);
-  traceln("deliver...");
-  post(["deliver", "message", "slot1", { method: "incr", args: [] }]);
-  await sync.promise;
-  post(["deliver", "message", "slot1", { method: "incr", args: [] }]);
-  await sync.promise;
-  // snapshot the vatWorker
-  const snapshot2 = MAKE_SNAPSHOT(vatWorker2);
+  //await reloadVat('alice');
+  //await sendToVat('index', 'incr');
+  //await suspendVat('alice');
 
-
-  // pretend we're relaunching the process again
-  const vatWorker3 = LOAD_SNAPSHOT(snapshot2);
-  post = connectToWorker(vatWorker3);
-  post(["deliver", "message", "slot1", { method: "decr", args: [] }]);
-  await sync.promise;
-  post(["deliver", "message", "slot1", { method: "incr", args: [] }]);
-  await sync.promise;
+  //await reloadVat('alice');
+  //await sendToVat('index', 'decr');
+  //await suspendVat('alice');
 
   traceln("demo concludes.");
 }
 
-main().catch((err) => traceln(err));
+//main().catch((err) => traceln(err));
+
+
+/*
+async function suspendVat(index) {
+  const { createSnapshot, deleteVat } = vats.get(index);
+  snapshots.set(index, createSnapshot());
+  deleteVat();
+  vats.delete(index);
+}
+
+
+async function reloadVat(index) {
+  const snapshot = snapshots.get(index);
+  snapshots.delete(index);
+  const syscall = {
+    send(...args) { return 'results'; },
+  };
+  vats.set(index, createVatFromSnapshot(snapshot, syscall));
+}
+
+async function sendToVat(index, method, ...args) {
+  const { sendToVat } = vats.get(index);
+  sendToVat(['deliver', 'message', 'slot1', { method, args }]);
+}
+*/

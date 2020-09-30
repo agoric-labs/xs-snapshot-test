@@ -18,7 +18,8 @@ function main(port) {
           const [bundle] = margs;
           const buildRoot = vatCmp.evaluate(bundle);
           clist[`slot${nextSlot++}`] = buildRoot({ testLog });
-          port.postMessage("ok");
+          // port.postMessage("ok");
+          globalThis.toParent(['bundleLoaded']);
         }
         break;
       case "deliver":
@@ -26,7 +27,7 @@ function main(port) {
           const [dtype, targetRef, { method, args }] = margs;
           const target = clist[targetRef];
           const result = target[method](...args);
-          port.postMessage(result);
+          port.postMessage(['ok']);
         }
         break;
       default:
@@ -34,7 +35,14 @@ function main(port) {
     }
   });
 
-  port.onmessage = handle;
+  // now export 'handle' somehow
+  // globalThis.handle = handle; // fallback to this
+  return handle; // prefer this, but need it to work in subsequent reloads too
 }
 
 main(self);
+
+
+// the loader is responsible for:
+// * setting globalThis.toParent to a (new) function that synchronously calls into the dispatch unit
+// * reading globalThis.handle to get a function that can be handed to the dispatch unit
